@@ -1,0 +1,12 @@
+[Unit]
+Description=Boot Led
+DefaultDependencies=false
+
+[Service]
+ExecStart=/usr/bin/python3 -u boot_led.py
+WorkingDirectory=/home/pi/src/bt-kitchenradio
+Restart=no
+User=pi
+
+[Install]
+WantedBy=default.target
