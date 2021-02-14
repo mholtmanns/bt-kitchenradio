@@ -1,0 +1,14 @@
+[Unit]
+Description=Boot Led
+DefaultDependencies=no
+After=local-fs.target time-sync.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/python3 /home/pi/src/bt-kitchenradio/boot-led.py
+WorkingDirectory=/home/pi/src/bt-kitchenradio
+
+[Install]
+WantedBy=default.target
+WantedBy=multi-user.target
+
