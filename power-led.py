@@ -22,7 +22,8 @@
 # I don't put too much thought/effort into it.
 # Note: Process import needs to be capitalized, 'process' is built-in
 
-from gpiozero import PWMLED
+from gpiozero import PWMLED, Button
+from subprocess import check_call
 from time import monotonic
 from random import randrange
 from signal import pause
@@ -30,11 +31,11 @@ from signal import pause
 # Define GPIO to use for the LED, default to 17
 
 LED_GPIO = 17
+OFF_BTN_GPIO = 2
+BT_BUTTON_GPIO = 3
 
 # randomized switch on sequence
-def switch_on(gLED):
-    # Initialize LED
-    led = PWMLED(gLED)
+def switch_on(led):
     # Set to a value that actually triggers the LED on
     led.value = 0.4
     # Set to minimal value; it will effectively be higher due to
@@ -54,8 +55,37 @@ def switch_on(gLED):
     # Keep this process running to not switch off the LED
     # Might be dirty, but until gpiozero does not support NOT
     # cleaning up specific GPIOs, this is the easiest solution
-    pause()
+
+def shutdown():
+    # check_call(['sudo', 'poweroff'])
+    print("Do you really want to shut down? Press the BT button to confirm!")
+    # TODO: Ouput warning message and prompt for confirmation
+    #       button press of the BT button
+    bt_disconnect_btn.wait_for_press(10)
+    if bt_disconnect_btn.active_time == None:
+        print("Shutdown cancelled!")
+        # TODO: Sound output
+    else:
+        # check_call(['sudo', 'poweroff'])
+        print("Shutting down system NOW!")
 
 
-switch_on(LED_GPIO)
+def bt_disconnect()
+    # TODO: Implement BT disconnect by checking active devices
+    # and disconencting them
+    print("Disconnecting all connected BT devices, please wait...")
+    print("Done! Ready for pairing.")
+
+
+# Initialize LED
+onled = PWMLED(LED_GPIO)
+switch_on(onled)
+
+shutdown_btn = Button(OFF_BTN_GPIO, hold_time=3)
+bt_disconnect_btn = BUTTON(BT_BUTTON_GPIO, hold_time=3)
+
+shutdown_btn.when_held = shutdown
+bt_disconnect_btn.when_held = bt_disconnect
+
+pause()
 
