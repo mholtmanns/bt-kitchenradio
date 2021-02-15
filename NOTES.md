@@ -1,5 +1,5 @@
 # Generic development notes and references
-This is the attemtp to somewhat documnt the development steps to the final (or is it ever?) version of the "Bluetooth on Raspberry Pi" powered Kitchen Radio.
+This is the attempt to somewhat document the development steps to the final (or is it ever?) version of the "Bluetooth on Raspberry Pi" powered Kitchen Radio.
 
 As a background: My wife and I discovered an old tube radio from the 1950s on a garbage dump and decided to turn it into a nice looking BT speaker. I found some old speaker parts that I could put into the cleaned out interior as well as an unused Raspberry Pi 2 with extra Wifi and BT through USB.
 
