@@ -3,6 +3,19 @@ This is the attempt to somewhat document the development steps to the final (or 
 
 As a background: My wife and I discovered an old tube radio from the 1950s on a garbage dump and decided to turn it into a nice looking BT speaker. I found some old speaker parts that I could put into the cleaned out interior as well as an unused Raspberry Pi 2 with extra Wifi and BT through USB.
 
+## Status 05.04.2021
+- Casing is done, including fitting the second speaker parts on the bottom
+- Red/Orange LED to show Power is installe din an old tube housing and enabled for "Flicker on"
+- BT disconnect and Power down buttons are installed and primed
+  - Holding the BT button for 5 seconds will disconnect all BT devices
+  - Holding the Power button for 5 seconds will start the Power LED blining and give 10 seconds time to press the BT button to shut down the system
+
+### ToDos
+Next up is:
+- Add audio clues for the BT and ower events
+- General code cleanup
+
+## Status 15.02.2021
 What's done so far:
 - Created a POC with all the parts in the casing
 - Have an additional warm-yellow light bulb installed to give it retro-lighting

@@ -3,6 +3,7 @@ from signal import pause
 from time import sleep
 from time import monotonic
 from random import randrange
+from bt_check_connection import bt_connected
 
 def switch_on():
     if led.is_lit:
@@ -26,12 +27,14 @@ def switch_off():
         led.value = 0.1 - (0.01 * i)
         sleep(0.1)
 
-led = PWMLED(17)
+led = PWMLED(27)
 button = Button(2, bounce_time = 1)
 
 print (monotonic())
+print (bt_connected())
 
-button.when_pressed = switch_on
+switch_on()
+# button.when_pressed = switch_on
 # button.when_released = switch_off
 
 

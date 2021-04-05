@@ -17,25 +17,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see < https: // www.gnu.org/licenses/>.
 
+# TODO: Clean-up, function doc comments, cleaner logging, etc.
+
 # The idea is that the random brightness increase emulates somewhat the
 # behaviour of old tubes "warming up". Since it is only seen once
 # I don't put too much thought/effort into it.
-# Note: Process import needs to be capitalized, 'process' is built-in
 
 from gpiozero import PWMLED, Button
-from subprocess import check_call
-from time import monotonic
+from subprocess import check_call, Popen
+from time import monotonic, sleep
 from random import randrange
 from signal import pause
+from threading import Thread, Event
+from bt_check_connection import bt_disconnect
 
-# Define GPIO to use for the LED, default to 17
+# I dislike magic numbers, but for simplicity's sake we use them here
+LED_GPIO = 27           # Pins 13/14 - Power LED
+OFF_BTN_GPIO = 13       # Pins 33/34 - Power Off Button
+BT_BUTTON_GPIO = 5      # Pins 29/30 - Bluetooth disconnect button
 
-LED_GPIO = 17
-OFF_BTN_GPIO = 2
-BT_BUTTON_GPIO = 3
+# Initialize Power LED
+onled = PWMLED(LED_GPIO)
 
-# randomized switch on sequence
 def switch_on(led):
+    """Randomize the LED brightness during boot-up
+    """
     # Set to a value that actually triggers the LED on
     led.value = 0.4
     # Set to minimal value; it will effectively be higher due to
@@ -44,7 +50,7 @@ def switch_on(led):
 
     t = monotonic()
     e = monotonic()
-    # Light it up slowly over time emulating some form of hyteresis
+    # Light it up slowly over time emulating some flickering
     while e - t < 16:
         diff = randrange(int(e - t), 21)
         led.value = 0.015 * diff
@@ -56,36 +62,54 @@ def switch_on(led):
     # Might be dirty, but until gpiozero does not support NOT
     # cleaning up specific GPIOs, this is the easiest solution
 
+def powerdown(e):
+    """ Loop power LED on and off until we decide to shut down or not
+    """
+    while not e.isSet():
+        onled.off()
+        sleep(0.5)
+        onled.on()
+        sleep(0.5)
+    
+
 def shutdown():
-    # check_call(['sudo', 'poweroff'])
-    print("Do you really want to shut down? Press the BT button to confirm!")
+    # print("Do you really want to shut down? Press the BT button to confirm!")
     # TODO: Ouput warning message and prompt for confirmation
     #       button press of the BT button
+    e = Event()
+    off_thread = Thread(target=powerdown, args=(e,), daemon=True)
+    off_thread.start()
     bt_disconnect_btn.wait_for_press(10)
     if bt_disconnect_btn.active_time == None:
-        print("Shutdown cancelled!")
+        # print("Shutdown cancelled!")
+        # Signal the blinking thread to stop
+        e.set()
+        # make sure the Power LED is on
+        onled.on()
         # TODO: Sound output
+        return
     else:
-        # check_call(['sudo', 'poweroff'])
-        print("Shutting down system NOW!")
+        # print("Shutting down system NOW!")
+        try:
+            # print("sudo poweroff")
+            # Signal the blinking thread to stop
+            e.set()
+            # make sure the Power LED is on before shutdown so once it
+            # is off we know the system is off as well
+            onled.on()
+            r = check_call(['sudo', 'poweroff'])
+        except subprocess.CalledProcessError:
+            # TODO: Error handling
+            pass
 
+if __name__ == "__main__":
+    # switch_on(onled)
+    onled.on()
 
-def bt_disconnect()
-    # TODO: Implement BT disconnect by checking active devices
-    # and disconencting them
-    print("Disconnecting all connected BT devices, please wait...")
-    print("Done! Ready for pairing.")
+    shutdown_btn = Button(OFF_BTN_GPIO, hold_time=3)
+    bt_disconnect_btn = Button(BT_BUTTON_GPIO, hold_time=3)
 
+    shutdown_btn.when_held = shutdown
+    bt_disconnect_btn.when_held = bt_disconnect
 
-# Initialize LED
-onled = PWMLED(LED_GPIO)
-switch_on(onled)
-
-shutdown_btn = Button(OFF_BTN_GPIO, hold_time=3)
-bt_disconnect_btn = BUTTON(BT_BUTTON_GPIO, hold_time=3)
-
-shutdown_btn.when_held = shutdown
-bt_disconnect_btn.when_held = bt_disconnect
-
-pause()
-
+    pause()
